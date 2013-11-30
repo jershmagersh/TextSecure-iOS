@@ -28,9 +28,7 @@
 - (id)init {
     if (self = [super init]) {
         operationManager = [[AFHTTPRequestOperationManager manager] initWithBaseURL:[[NSURL alloc] initWithString:textSecureServer]];
-#warning we are testing to make sure that cert incompatibility is problem with new server
-        operationManager.securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];
-        //operationManager.securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModePublicKey];
+        operationManager.securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModePublicKey];
         operationManager.requestSerializer = [AFJSONRequestSerializer serializer];
         
     }

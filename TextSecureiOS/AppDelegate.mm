@@ -10,7 +10,6 @@
 #import "Cryptography.h"
 #import "UserDefaults.h"
 #import <PonyDebugger/PonyDebugger.h> //ponyd serve --listen-interface=127.0.0.1
-#import "NSObject+SBJson.h"
 #import "EncryptedDatabase.h"
 #import "TSRegisterForPushRequest.h"
 #import "NSString+Conversion.h"
@@ -19,6 +18,8 @@
 #import "TSContact.h"
 #import "NSData+Base64.h"
 #import "TSSubmitMessageRequest.h"
+#import "TSMessagesManager.h"
+
 @implementation AppDelegate
 
 #pragma mark - UIApplication delegate methods
