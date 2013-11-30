@@ -16,7 +16,9 @@
 #import "Constants.h"
 #import <RNCryptor/RNEncryptor.h>
 #import <RNCryptor/RNDecryptor.h>
-
+#import <RNCryptor/RNCryptorEngine.h>
+#import <RNCryptor/RNCryptor.h>
+#import <RNCryptor/RNCryptor+Private.h>
 #include "NSString+Conversion.h"
 #include "NSData+Base64.h"
 #include "ECKeyPair.h"
@@ -258,7 +260,7 @@
 }
 
 
-+(NSData*) AES256Decryption:(NSData*) dataToEncrypt withKey:(NSData*) key withIV:(NSData*) iv withMac:(NSData*)mac {
++(NSData*) AES256Decryption:(NSData*) dataToDecrypt withKey:(NSData*) key withIV:(NSData*) iv withMac:(NSData*)hmacKey {
 //  //
 //   const RNCryptorSettings kRNTextSecureSettings = {
 //    .algorithm = kCCAlgorithmAES128,
@@ -266,7 +268,7 @@
 //    .IVSize = kCCBlockSizeAES128,
 //    .options = kCCOptionPKCS7Padding,
 //    .HMACAlgorithm = kCCHmacAlgSHA256,
-//    .HMACLength = [mac length],
+//    .HMACLength = [hmacKey length],
 //    
 //    .keySettings = {
 //      .keySize = kCCKeySizeAES256,
@@ -277,15 +279,55 @@
 //    },
 //    
 //    .HMACKeySettings = {
-//      .keySize = [mac length],
+//      .keySize = [hmacKey length],
 //      .saltSize = 0,
 //      .PBKDFAlgorithm = kCCPBKDF2,
 //      .PRF = kCCPRFHmacAlgSHA1,
 //      .rounds = 10000
 //    }
 //  };
-//  NSData *dataToEncryptInRNCryptorFormat = [NSData dat]
-
+//  NSError *error;
+//  
+//  CCCryptorRef cryptor;
+//  CCCryptorStatus cryptorStatus = CCCryptorCreate(kCCDecrypt,
+//                                  kRNTextSecureSettings.algorithm,
+//                                  kRNTextSecureSettings.options,
+//                                  [key bytes],
+//                                  [key length],
+//                                  [iv bytes],
+//                                  &cryptor);
+//  if (cryptorStatus != kCCSuccess || cryptor == NULL) {
+//    return nil;
+//  }
+//  
+//  NSMutableData *buffer = [[NSMutableData alloc] init];
+//  [buffer setLength:CCCryptorGetOutputLength(cryptor, [dataToDecrypt length], true)]; // We'll reuse the buffer in -finish
+//  
+//  size_t dataOutMoved;
+//  cryptorStatus = CCCryptorUpdate(cryptor,       // cryptor
+//                                  dataToDecrypt.bytes,      // dataIn
+//                                  dataToDecrypt.length,     // dataInLength (verified > 0 above)
+//                                  buffer.mutableBytes,      // dataOut
+//                                  buffer.length, // dataOutAvailable
+//                                  &dataOutMoved);   // dataOutMoved
+//
+//  if (cryptorStatus != kCCSuccess) {
+//    return nil;
+//  }
+//
+//  NSMutableData *HMACData = [NSMutableData dataWithLength:[hmacKey length]];
+//  CCHmacContext _HMACContext;
+//  CCHmacInit(&_HMACContext, kRNTextSecureSettings.HMACAlgorithm, [hmacKey bytes], [hmacKey length]);
+//  CCHmacUpdate(&_HMACContext, [dataToDecrypt bytes],[dataToDecrypt length]);
+//  CCHmacFinal(&_HMACContext, [HMACData mutableBytes]);
+//  if (![HMACData isEqualToData:dataToDecrypt]) {
+//    return nil;
+//  }
+//  
+//  
+//  return [buffer subdataWithRange:NSMakeRange(0, dataOutMoved)];
+  @throw [[NSException alloc] initWithName:@"unimplemented" reason:@"sketch of what we need" userInfo:nil];
+  return nil;
 }
 
 

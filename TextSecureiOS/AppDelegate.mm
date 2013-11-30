@@ -160,15 +160,15 @@
 //  opaque iv[16];
 //  opaque ciphertext[...]; // The IncomingPushMessageSignal
 //  opaque mac[10];
-//  unsigned char version[1];
-//  unsigned char iv[16];
-//  unsigned char *ciphertext =  (unsigned char*)malloc(([payload length]-10-17)*sizeof(char));
-//  unsigned char mac[10];
-//  [payload getBytes:version range:NSMakeRange(0, 1)];
-//  [payload getBytes:iv range:NSMakeRange(1, 16)];
-//  [payload getBytes:ciphertext range:NSMakeRange(17, [payload length]-10-17)];
-//  [payload getBytes:mac range:NSMakeRange([payload length]-11, 10)];
-//  
+  unsigned char version[1];
+  unsigned char iv[16];
+  unsigned char *ciphertext =  (unsigned char*)malloc(([payload length]-10-17)*sizeof(char));
+  unsigned char mac[10];
+  [payload getBytes:version range:NSMakeRange(0, 1)];
+  [payload getBytes:iv range:NSMakeRange(1, 16)];
+  [payload getBytes:ciphertext range:NSMakeRange(17, [payload length]-10-17)];
+  [payload getBytes:mac range:NSMakeRange([payload length]-11, 10)];
+//
 //  NSData* signalingKey = [NSData dataFromBase64String:[Cryptography getSignalingKeyToken]];
   
   UIAlertView *pushAlert = [[UIAlertView alloc] initWithTitle:[pushInfo objectForKey:@"alert"] message:[pushInfo objectForKey:@"m"] delegate:self cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
