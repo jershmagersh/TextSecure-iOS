@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Open Whisper Systems. All rights reserved.
 //
 
-#import "AppDelegate.h"
+#import "AppDelegate.hh"
 #import "Cryptography.h"
 #import "UserDefaults.h"
 #import <PonyDebugger/PonyDebugger.h> //ponyd serve --listen-interface=127.0.0.1
@@ -14,6 +14,11 @@
 #import "EncryptedDatabase.h"
 #import "TSRegisterForPushRequest.h"
 #import "NSString+Conversion.h"
+#warning remove the below imports
+#import "IncomingPushMessageSignal.hh"
+#import "TSContact.h"
+#import "NSData+Base64.h"
+#import "TSSubmitMessageRequest.h"
 @implementation AppDelegate
 
 #pragma mark - UIApplication delegate methods
@@ -55,6 +60,7 @@
     [passwordDialogue show];
     
 	}
+  [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sendMessage:) name:@"SendMessage" object:nil];
 	return YES;
 
 }
@@ -71,6 +77,37 @@
     
   }
 }
+
+-(void) sendMessage:(NSNotification*)notification {
+  TSContact* contact = [[notification userInfo] objectForKey:@"contact"];
+  NSString *message = [[notification userInfo] objectForKey:@"message"];
+  NSString *serializedMessage = [[IncomingPushMessageSignal createSerializedPushMessageContent:message withAttachments:nil] base64Encoding];
+  //Tests deserialization [IncomingPushMessageSignal prettyPrintPushMessageContent:[IncomingPushMessageSignal getPushMessageContentForData:[NSData dataFromBase64String:serializedMessage]]];
+  [[TSNetworkManager sharedManager] queueAuthenticatedRequest:[[TSSubmitMessageRequest alloc] initWithRecipient:contact message:serializedMessage] success:^(AFHTTPRequestOperation *operation, id responseObject) {
+    
+    switch (operation.response.statusCode) {
+      case 200:
+        DLog(@"we have some success information %@",responseObject);
+        // So let's encrypt a message using this
+        
+        
+        break;
+        
+      default:
+        DLog(@"error sending message");
+#warning Add error handling if not able to get contacts prekey
+        break;
+    }
+  } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+#warning Add error handling if not able to send the token
+    DLog(@"failure %d, %@",operation.response.statusCode,operation.response.description);
+    
+    
+  }];
+  
+
+}
+
 
 
 #pragma mark - Push notifications

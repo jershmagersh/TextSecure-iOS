@@ -1,4 +1,4 @@
-//
+                                                                                                                                         //
 //  ComposeMessageViewController.m
 //  TextSecureiOS
 //
@@ -180,29 +180,13 @@
     else {
         [JSMessageSoundEffect playMessageReceivedSound];
     }
-#warning we don't need to do this every time, just at the beginning of a session...
-  TSContact *recipient = [[TSContact alloc] init];
-  recipient.registeredId = @"dummy";
-  [[TSNetworkManager sharedManager] queueAuthenticatedRequest:[[TSRecipientPrekeyRequest alloc] initWithRecipient:recipient] success:^(AFHTTPRequestOperation *operation, id responseObject) {
-    
-    switch (operation.response.statusCode) {
-      case 200:
-        DLog(@"we have prekey of Fred %@",responseObject);
-        break;
-        
-      default:
-        DLog(@"Issue getting contacts' prekeys");
-#warning Add error handling if not able to get contacts prekey
-        break;
-    }
-  } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-#warning Add error handling if not able to send the token
-    DLog(@"failure %d, %@",operation.response.statusCode,operation.response.description);
-    
-    
-  }];
+#warning sending unencrypted to test pipeline
+#warning posting notification to avoid making evvvvverything objectivec++ for now
   
-
+  [[NSNotificationCenter defaultCenter]
+    postNotificationName:@"SendMessage"
+    object:self userInfo:[[NSDictionary alloc] initWithObjects:[[NSArray alloc] initWithObjects:self.contact,text, nil]
+                                                       forKeys:[[NSArray alloc] initWithObjects:@"contact",@"message", nil]]];
     [self finishSend];
 }
 

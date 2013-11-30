@@ -12,27 +12,6 @@
 @implementation IncomingPushMessageSignal
 
 
--(id) initWithRecipient:(NSString*) recipientId message:(NSString*)message date:(NSDate*) date type:(int)type{
-  std::string  *cppRecipientId = new std::string([recipientId UTF8String]);
-  std::string *cppMessage = new std::string([message UTF8String]);
-  
-  textsecure::IncomingPushMessageSignal *incomingPushMessage = new textsecure::IncomingPushMessageSignal();
-  // TODO: store this
-  incomingPushMessage->set_type(type); // 0=plaintext,1=ciphertext,3=prekeybundle
-  incomingPushMessage->set_allocated_source(cppRecipientId);
-  //incomingPushMessage->set_destinations(<#int index#>, <#const ::std::string &value#>); //leaving empty, not a group message.
-  incomingPushMessage->set_timestamp((uint64_t)[date timeIntervalSince1970]);
-  incomingPushMessage->set_allocated_message(cppMessage);
-  return self;
-}
-
--(id) initWithSerializedIncomingPushMessage:(NSData*) serializedIncomingPushMessage {
-  // Deserializing message
-  // TODO: store this
-  textsecure::IncomingPushMessageSignal *deserializedIncomingPushMessage = [IncomingPushMessageSignal getIncomingPushMessageSignalForData:serializedIncomingPushMessage];
-  return self;
-}
-
 
 -(id) init {
   // Testing things out
@@ -63,17 +42,20 @@
     textsecure::IncomingPushMessageSignal *deserializedIncomingPushMessage = [IncomingPushMessageSignal getIncomingPushMessageSignalForData:serializedIncomingPushMessage];
     // Printing deserialized message
     [IncomingPushMessageSignal prettyPrint:deserializedIncomingPushMessage];
+    
+    
+    
   }
   return self;
 }
 
-// Serialize to NSData.
+// Serialize IncomingPushMessageSignal to NSData.
 + (NSData *)getDataForIncomingPushMessageSignal:(textsecure::IncomingPushMessageSignal *)incomingPushMessage {
   std::string ps = incomingPushMessage->SerializeAsString();
   return [NSData dataWithBytes:ps.c_str() length:ps.size()];
 }
 
-// De-serialize from an NSData object.
+// De-serialize IncomingPushMessageSignal from an NSData object.
 + (textsecure::IncomingPushMessageSignal *)getIncomingPushMessageSignalForData:(NSData *)data {
   int len = [data length];
   char raw[len];
@@ -83,8 +65,35 @@
   return incomingPushMessage;
 }
 
-// Dlog
-+ (void)prettyPrint:(textsecure::IncomingPushMessageSignal *)incomingPushMessage {
+// Serialize PushMessageContent to NSData.
++ (NSData *)getDataForPushMessageContent:(textsecure::PushMessageContent *)pushMessageContent {
+  std::string ps = pushMessageContent->SerializeAsString();
+  return [NSData dataWithBytes:ps.c_str() length:ps.size()];
+}
+
+
+// De-serialize PushMessageContent from an NSData object.
++ (textsecure::PushMessageContent *)getPushMessageContentForData:(NSData *)data {
+  int len = [data length];
+  char raw[len];
+  textsecure::PushMessageContent *pushMessageContent = new textsecure::PushMessageContent;
+  [data getBytes:raw length:len];
+  pushMessageContent->ParseFromArray(raw, len);
+  return pushMessageContent;
+}
+
+// Create PushMessageContent from it's Objective C contents
++ (NSData *)createSerializedPushMessageContent:(NSString*) message withAttachments:(NSArray*) attachments {
+#warning no attachments suppoart yet
+  textsecure::PushMessageContent *pushMessageContent = new textsecure::PushMessageContent();
+  const std::string body([message cStringUsingEncoding:NSASCIIStringEncoding]);
+  pushMessageContent->set_body(body);
+  NSData *serializedPushMessageContent = [IncomingPushMessageSignal getDataForPushMessageContent:pushMessageContent];
+  delete pushMessageContent;
+  return serializedPushMessageContent;
+}
+
++ (void)prettyPrint:(textsecure::IncomingPushMessageSignal *)incomingPushMessageSignal {
   /*
    Type
    Allowed source
@@ -93,10 +102,10 @@
    Allocated Message
    */
   
-  const uint32_t cppType = incomingPushMessage->type();
-  const std::string cppSource = incomingPushMessage->source();
-  const uint64_t cppTimestamp = incomingPushMessage->timestamp();
-  const std::string cppMessage = incomingPushMessage->message();
+  const uint32_t cppType = incomingPushMessageSignal->type();
+  const std::string cppSource = incomingPushMessageSignal->source();
+  const uint64_t cppTimestamp = incomingPushMessageSignal->timestamp();
+  const std::string cppMessage = incomingPushMessageSignal->message();
   /* testing conversion to objective c objects */
   NSNumber* type = [NSNumber numberWithInteger:cppType];
   NSString* source = [NSString stringWithCString:cppSource.c_str() encoding:NSASCIIStringEncoding];
@@ -104,6 +113,15 @@
   NSString* messsage = [NSString stringWithCString:cppMessage.c_str() encoding:NSASCIIStringEncoding];
   
   NSLog([NSString stringWithFormat:@"Type: %@ \n source: %@ \n timestamp: %@, message: %@",
-        type,source,timestamp,messsage]);
+         type,source,timestamp,messsage]);
 }
+// Dlog
++ (void)prettyPrintPushMessageContent:(textsecure::PushMessageContent *)pushMessageContent {
+  const std::string cppBody = pushMessageContent->body();
+  NSString* body = [NSString stringWithCString:cppBody.c_str() encoding:NSASCIIStringEncoding];
+  NSLog(@"recieved message %@",body);
+#warning doesn't handle attachments yet
+
+}
+
 @end
