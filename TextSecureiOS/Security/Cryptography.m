@@ -226,8 +226,11 @@
 }
 
 
-+(NSData*) AES256Encryption:(NSData*) dataToEncrypt withPassword:(NSString*)password {
 
+
++(NSData*) AES256Encryption:(NSData*) dataToEncrypt withPassword:(NSString*)password {
+ // Encrypted NSData contains including a header, encryption salt, HMAC salt, IV, ciphertext, and HMAC.
+  // the password is stretched via PBKDF2; using library to simplify
   NSError *error;
   NSData *encryptedData = [RNEncryptor encryptData:dataToEncrypt
                                       withSettings:kRNCryptorAES256Settings
@@ -238,7 +241,8 @@
           
 
 +(NSData*) AES256Decryption:(NSData*) dataToDecrypt withPassword:(NSString*)password {
- 
+  // Decrypts an NSData object containing including a header, encryption salt, HMAC salt, IV, ciphertext, and HMAC.
+  // the password is stretched via PBKDF2
   NSError *error;
   NSData *decryptedData  = [RNDecryptor decryptData:dataToDecrypt
                                        withPassword:password
@@ -254,6 +258,35 @@
 }
 
 
++(NSData*) AES256Decryption:(NSData*) dataToEncrypt withKey:(NSData*) key withIV:(NSData*) iv withMac:(NSData*)mac {
+//  //
+//   const RNCryptorSettings kRNTextSecureSettings = {
+//    .algorithm = kCCAlgorithmAES128,
+//    .blockSize = kCCBlockSizeAES128,
+//    .IVSize = kCCBlockSizeAES128,
+//    .options = kCCOptionPKCS7Padding,
+//    .HMACAlgorithm = kCCHmacAlgSHA256,
+//    .HMACLength = [mac length],
+//    
+//    .keySettings = {
+//      .keySize = kCCKeySizeAES256,
+//      .saltSize = 8,
+//      .PBKDFAlgorithm = kCCPBKDF2,
+//      .PRF = kCCPRFHmacAlgSHA1,
+//      .rounds = 10000
+//    },
+//    
+//    .HMACKeySettings = {
+//      .keySize = [mac length],
+//      .saltSize = 0,
+//      .PBKDFAlgorithm = kCCPBKDF2,
+//      .PRF = kCCPRFHmacAlgSHA1,
+//      .rounds = 10000
+//    }
+//  };
+//  NSData *dataToEncryptInRNCryptorFormat = [NSData dat]
+
+}
 
 
 
