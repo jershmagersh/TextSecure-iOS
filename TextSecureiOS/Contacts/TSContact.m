@@ -8,6 +8,7 @@
 
 #import "TSContact.h"
 #import <AddressBook/AddressBook.h>
+#import "EncryptedDatabase.h"
 
 @implementation TSContact
 - (NSString*) name{
@@ -23,4 +24,9 @@
         
     }else {return nil;}
 }
+
+-(void) save{
+    [[EncryptedDatabase database] storeTSContact:self];
+}
+
 @end

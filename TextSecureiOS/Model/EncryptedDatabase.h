@@ -5,7 +5,7 @@
 //  Created by Christine Corbett Moran on 10/12/13.
 //  Copyright (c) 2013 Open Whisper Systems. All rights reserved.
 //
-
+#import "TSContact.h"
 #import <Foundation/Foundation.h>
 
 @class ECKeyPair;
@@ -27,4 +27,6 @@
 -(NSArray*) getPersonalPrekeys;
 -(void) storeMessage:(TSMessage*)message;
 -(NSArray*) getMessagesOnThread:(int) threadId;
+-(void)storeTSContact:(TSContact*)contact;
+
 @end
