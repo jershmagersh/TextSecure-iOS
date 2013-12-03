@@ -168,8 +168,10 @@
   [payload getBytes:iv range:NSMakeRange(1, 16)];
   [payload getBytes:ciphertext range:NSMakeRange(17, [payload length]-10-17)];
   [payload getBytes:mac range:NSMakeRange([payload length]-11, 10)];
-//
-//  NSData* signalingKey = [NSData dataFromBase64String:[Cryptography getSignalingKeyToken]];
+
+  
+  // try decrypting with AES CBC
+  NSData* signalingKey = [NSData dataFromBase64String:[Cryptography getSignalingKeyToken]];
   
   UIAlertView *pushAlert = [[UIAlertView alloc] initWithTitle:[pushInfo objectForKey:@"alert"] message:[pushInfo objectForKey:@"m"] delegate:self cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
   
