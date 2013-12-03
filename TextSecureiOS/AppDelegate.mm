@@ -162,7 +162,8 @@
 //  opaque mac[10];
   unsigned char version[1];
   unsigned char iv[16];
-  unsigned char *ciphertext =  (unsigned char*)malloc(([payload length]-10-17)*sizeof(char));
+  int ciphertext_length=([payload length]-10-17)*sizeof(char);
+  unsigned char *ciphertext =  (unsigned char*)malloc(ciphertext_length);
   unsigned char mac[10];
   [payload getBytes:version range:NSMakeRange(0, 1)];
   [payload getBytes:iv range:NSMakeRange(1, 16)];
@@ -171,9 +172,11 @@
 
   
   // try decrypting with AES CBC
+
   NSData* signalingKey = [NSData dataFromBase64String:[Cryptography getSignalingKeyToken]];
-  
-  UIAlertView *pushAlert = [[UIAlertView alloc] initWithTitle:[pushInfo objectForKey:@"alert"] message:[pushInfo objectForKey:@"m"] delegate:self cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
+  NSData* decryption=[Cryptography CC_AES256_CBC_Decryption:[NSData dataWithBytes:ciphertext length:ciphertext_length] withKey:signalingKey withIV:[NSData dataWithBytes:iv length:16] withMac:[NSData dataWithBytes:mac length:10]];
+  NSString *decryptedMessage = [[NSString alloc] initWithData:decryption encoding:NSUTF8StringEncoding];
+  UIAlertView *pushAlert = [[UIAlertView alloc] initWithTitle:[pushInfo objectForKey:@"alert"] message:[NSString stringWithFormat:@"message:\n%@\ndecryption:\n%@\n",[pushInfo objectForKey:@"m"],decryptedMessage] delegate:self cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
   
   [pushAlert show];
 #warning we need to handle this push!, the UI will need to select the appropriate message view
