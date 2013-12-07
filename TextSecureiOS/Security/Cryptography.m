@@ -323,7 +323,6 @@
 //    return nil;
 //  }
 //  
-  
   return [buffer subdataWithRange:NSMakeRange(0, dataOutMoved)];
 //  @throw [[NSException alloc] initWithName:@"unimplemented" reason:@"sketch of what we need" userInfo:nil];
 //  return nil;

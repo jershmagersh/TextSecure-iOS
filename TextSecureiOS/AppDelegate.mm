@@ -83,7 +83,8 @@
   TSContact* contact = [[notification userInfo] objectForKey:@"contact"];
   NSString *message = [[notification userInfo] objectForKey:@"message"];
   NSString *serializedMessage = [[IncomingPushMessageSignal createSerializedPushMessageContent:message withAttachments:nil] base64Encoding];
-  //Tests deserialization [IncomingPushMessageSignal prettyPrintPushMessageContent:[IncomingPushMessageSignal getPushMessageContentForData:[NSData dataFromBase64String:serializedMessage]]];
+  //Tests deserialization
+  NSString* deserializedMessage = [IncomingPushMessageSignal prettyPrintPushMessageContent:[IncomingPushMessageSignal getPushMessageContentForData:[NSData dataFromBase64String:serializedMessage]]];
   [[TSNetworkManager sharedManager] queueAuthenticatedRequest:[[TSSubmitMessageRequest alloc] initWithRecipient:contact message:serializedMessage] success:^(AFHTTPRequestOperation *operation, id responseObject) {
     
     switch (operation.response.statusCode) {
@@ -184,8 +185,9 @@
   textsecure::IncomingPushMessageSignal *fullMessageInfoRecieved = [IncomingPushMessageSignal getIncomingPushMessageSignalForData:decryption];
   
   NSString *decryptedMessage = [IncomingPushMessageSignal getMessageBody:fullMessageInfoRecieved];
+  NSString *decryptedMessageAndInfo = [IncomingPushMessageSignal prettyPrint:fullMessageInfoRecieved];
 //  UIAlertView *pushAlert = [[UIAlertView alloc] initWithTitle:[pushInfo objectForKey:@"alert"] message:[NSString stringWithFormat:@"message:\n%@\ndecryption:\n%@\n",[pushInfo objectForKey:@"m"],decryptedMessage] delegate:self cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
-  UIAlertView *pushAlert = [[UIAlertView alloc] initWithTitle:@"decrypted message" message:decryptedMessage delegate:self cancelButtonTitle:Nil otherButtonTitles:@"OK", nil];
+  UIAlertView *pushAlert = [[UIAlertView alloc] initWithTitle:@"decrypted message" message:decryptedMessageAndInfo delegate:self cancelButtonTitle:Nil otherButtonTitles:@"OK", nil];
   [pushAlert show];
 #warning we need to handle this push!, the UI will need to select the appropriate message view
 

@@ -15,8 +15,8 @@
 + (NSData *)getDataForIncomingPushMessageSignal:(textsecure::IncomingPushMessageSignal *)incomingPushMessage;
 + (textsecure::IncomingPushMessageSignal *)getIncomingPushMessageSignalForData:(NSData *)data;
 + (textsecure::PushMessageContent *)getPushMessageContentForData:(NSData *)data;
-+ (void)prettyPrint:(textsecure::IncomingPushMessageSignal *)incomingPushMessageSignal;
-+ (void)prettyPrintPushMessageContent:(textsecure::PushMessageContent *)pushMessageContent;
++ (NSString*)prettyPrint:(textsecure::IncomingPushMessageSignal *)incomingPushMessageSignal;
++ (NSString*)prettyPrintPushMessageContent:(textsecure::PushMessageContent *)pushMessageContent;
 + (NSData *)createSerializedPushMessageContent:(NSString*) message withAttachments:(NSArray*) attachments;
 + (NSString*) getMessageBody:(textsecure::IncomingPushMessageSignal *)incomingPushMessageSignal;
 @end

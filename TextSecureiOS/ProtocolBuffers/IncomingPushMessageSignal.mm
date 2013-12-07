@@ -98,13 +98,10 @@
   const std::string cppMessage = incomingPushMessageSignal->message();
   NSData *messageData =[NSData dataWithBytes:cppMessage.c_str() length:cppMessage.size()];
   textsecure::PushMessageContent *messageContent = [IncomingPushMessageSignal getPushMessageContentForData:messageData];
-  // this has more than just this string, but let's return it to see
-  const std::string cppPushMessage = messageContent->body();
-  // finally convert this to objc // try UTF8 if it doesn't work
-  return [NSString stringWithCString:cppMessage.c_str() encoding:NSASCIIStringEncoding];
+  return [IncomingPushMessageSignal prettyPrintPushMessageContent:messageContent];
 }
 
-+ (void)prettyPrint:(textsecure::IncomingPushMessageSignal *)incomingPushMessageSignal {
++ (NSString*)prettyPrint:(textsecure::IncomingPushMessageSignal *)incomingPushMessageSignal {
   /*
    Type
    Allowed source
@@ -122,14 +119,17 @@
   NSNumber* timestamp = [NSNumber numberWithInteger:cppTimestamp];
 
   NSString* message = [IncomingPushMessageSignal getMessageBody:incomingPushMessageSignal];
-  NSLog([NSString stringWithFormat:@"Type: %@ \n source: %@ \n timestamp: %@, message: %@",
-         type,source,timestamp,message]);
+  NSString *fullInfo = [NSString stringWithFormat:@"Type: %@ \n source: %@ \n message: %@",
+                        type,source,message];
+  NSLog(fullInfo);
+  return fullInfo;
 }
 // Dlog
-+ (void)prettyPrintPushMessageContent:(textsecure::PushMessageContent *)pushMessageContent {
++ (NSString*)prettyPrintPushMessageContent:(textsecure::PushMessageContent *)pushMessageContent {
   const std::string cppBody = pushMessageContent->body();
   NSString* body = [NSString stringWithCString:cppBody.c_str() encoding:NSASCIIStringEncoding];
   NSLog(@"recieved message %@",body);
+  return  body;
 #warning doesn't handle attachments yet
 
 }
