@@ -313,16 +313,16 @@
   if (cryptorStatus != kCCSuccess) {
     return nil;
   }
-
-  NSMutableData *HMACData = [NSMutableData dataWithLength:[hmacKey length]];
-  CCHmacContext _HMACContext;
-  CCHmacInit(&_HMACContext, kRNTextSecureSettings.HMACAlgorithm, [hmacKey bytes], [hmacKey length]);
-  CCHmacUpdate(&_HMACContext, [dataToDecrypt bytes],[dataToDecrypt length]);
-  CCHmacFinal(&_HMACContext, [HMACData mutableBytes]);
-  if (![HMACData isEqualToData:dataToDecrypt]) {
-    return nil;
-  }
-  
+#warning TOTALLY INSECURE mac handled incorrectly here.
+//  NSMutableData *HMACData = [NSMutableData dataWithLength:[hmacKey length]];
+//  CCHmacContext _HMACContext;
+//  CCHmacInit(&_HMACContext, kRNTextSecureSettings.HMACAlgorithm, [hmacKey bytes], [hmacKey length]);
+//  CCHmacUpdate(&_HMACContext, [dataToDecrypt bytes],[dataToDecrypt length]);
+//  CCHmacFinal(&_HMACContext, [HMACData mutableBytes]);
+//  if (![HMACData isEqualToData:dataToDecrypt]) {
+//    return nil;
+//  }
+//  
   
   return [buffer subdataWithRange:NSMakeRange(0, dataOutMoved)];
 //  @throw [[NSException alloc] initWithName:@"unimplemented" reason:@"sketch of what we need" userInfo:nil];

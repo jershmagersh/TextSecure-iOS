@@ -93,6 +93,17 @@
   return serializedPushMessageContent;
 }
 
+
++ (NSString*) getMessageBody:(textsecure::IncomingPushMessageSignal *)incomingPushMessageSignal {
+  const std::string cppMessage = incomingPushMessageSignal->message();
+  NSData *messageData =[NSData dataWithBytes:cppMessage.c_str() length:cppMessage.size()];
+  textsecure::PushMessageContent *messageContent = [IncomingPushMessageSignal getPushMessageContentForData:messageData];
+  // this has more than just this string, but let's return it to see
+  const std::string cppPushMessage = messageContent->body();
+  // finally convert this to objc // try UTF8 if it doesn't work
+  return [NSString stringWithCString:cppMessage.c_str() encoding:NSASCIIStringEncoding];
+}
+
 + (void)prettyPrint:(textsecure::IncomingPushMessageSignal *)incomingPushMessageSignal {
   /*
    Type
@@ -105,15 +116,14 @@
   const uint32_t cppType = incomingPushMessageSignal->type();
   const std::string cppSource = incomingPushMessageSignal->source();
   const uint64_t cppTimestamp = incomingPushMessageSignal->timestamp();
-  const std::string cppMessage = incomingPushMessageSignal->message();
   /* testing conversion to objective c objects */
   NSNumber* type = [NSNumber numberWithInteger:cppType];
   NSString* source = [NSString stringWithCString:cppSource.c_str() encoding:NSASCIIStringEncoding];
   NSNumber* timestamp = [NSNumber numberWithInteger:cppTimestamp];
-  NSString* messsage = [NSString stringWithCString:cppMessage.c_str() encoding:NSASCIIStringEncoding];
-  
+
+  NSString* message = [IncomingPushMessageSignal getMessageBody:incomingPushMessageSignal];
   NSLog([NSString stringWithFormat:@"Type: %@ \n source: %@ \n timestamp: %@, message: %@",
-         type,source,timestamp,messsage]);
+         type,source,timestamp,message]);
 }
 // Dlog
 + (void)prettyPrintPushMessageContent:(textsecure::PushMessageContent *)pushMessageContent {

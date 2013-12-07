@@ -174,10 +174,18 @@
   // try decrypting with AES CBC
 
   NSData* signalingKey = [NSData dataFromBase64String:[Cryptography getSignalingKeyToken]];
-  NSData* decryption=[Cryptography CC_AES256_CBC_Decryption:[NSData dataWithBytes:ciphertext length:ciphertext_length] withKey:signalingKey withIV:[NSData dataWithBytes:iv length:16] withMac:[NSData dataWithBytes:mac length:10]];
-  NSString *decryptedMessage = [[NSString alloc] initWithData:decryption encoding:NSUTF8StringEncoding];
-  UIAlertView *pushAlert = [[UIAlertView alloc] initWithTitle:[pushInfo objectForKey:@"alert"] message:[NSString stringWithFormat:@"message:\n%@\ndecryption:\n%@\n",[pushInfo objectForKey:@"m"],decryptedMessage] delegate:self cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
+  // Actually only the first 32 bits of this are the crypto key
+  NSData* signalingKeyAESKeyMaterial = [signalingKey subdataWithRange:NSMakeRange(0, 32)];
+  NSData* signalingKeyHMACKeyMaterial = [signalingKey subdataWithRange:NSMakeRange(32, 20)];
+#warning TOTALLY INSECURE mac handled incorrectly here.
+  NSData* decryption=[Cryptography CC_AES256_CBC_Decryption:[NSData dataWithBytes:ciphertext length:ciphertext_length] withKey:signalingKeyAESKeyMaterial withIV:[NSData dataWithBytes:iv length:16] withMac:signalingKeyHMACKeyMaterial];
   
+  // Now get the protocol buffer message out
+  textsecure::IncomingPushMessageSignal *fullMessageInfoRecieved = [IncomingPushMessageSignal getIncomingPushMessageSignalForData:decryption];
+  
+  NSString *decryptedMessage = [IncomingPushMessageSignal getMessageBody:fullMessageInfoRecieved];
+//  UIAlertView *pushAlert = [[UIAlertView alloc] initWithTitle:[pushInfo objectForKey:@"alert"] message:[NSString stringWithFormat:@"message:\n%@\ndecryption:\n%@\n",[pushInfo objectForKey:@"m"],decryptedMessage] delegate:self cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
+  UIAlertView *pushAlert = [[UIAlertView alloc] initWithTitle:@"decrypted message" message:decryptedMessage delegate:self cancelButtonTitle:Nil otherButtonTitles:@"OK", nil];
   [pushAlert show];
 #warning we need to handle this push!, the UI will need to select the appropriate message view
 

@@ -18,4 +18,5 @@
 + (void)prettyPrint:(textsecure::IncomingPushMessageSignal *)incomingPushMessageSignal;
 + (void)prettyPrintPushMessageContent:(textsecure::PushMessageContent *)pushMessageContent;
 + (NSData *)createSerializedPushMessageContent:(NSString*) message withAttachments:(NSArray*) attachments;
++ (NSString*) getMessageBody:(textsecure::IncomingPushMessageSignal *)incomingPushMessageSignal;
 @end
