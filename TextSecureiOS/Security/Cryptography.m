@@ -182,7 +182,7 @@
   [dataToHmac appendData:iv];
   [dataToHmac appendData:dataToDecrypt];
 
-
+  // verify hmac
   NSData* ourHmacData = [Cryptography truncatedHmacSHA256:dataToHmac withMacKey:hmacKey];
   if(![ourHmacData isEqualToData:hmac]) {
     return nil;
@@ -200,11 +200,8 @@
                                         buffer, bufferSize,
                                         &bytesDecrypted);
   if (cryptStatus == kCCSuccess) {
-    //the returned NSData takes ownership of the buffer and will free it on deallocation
     return [NSData dataWithBytesNoCopy:buffer length:bytesDecrypted];
   }
-
-  
   
   free(buffer); //free the buffer;
   return nil;
@@ -225,21 +222,18 @@
                                         [dataToEncrypt bytes], [dataToEncrypt length],
                                         buffer, bufferSize, /* output */
                                         &bytesEncrypted);
-#warning totally insecure we need to compute hmac
+
   if (cryptStatus == kCCSuccess){
-    //the returned NSData takes ownership of the buffer and will free it on deallocation
     NSData* encryptedData= [NSData dataWithBytesNoCopy:buffer length:bytesEncrypted];
-    NSMutableData *dataToHmac = [NSMutableData data ];
+    //compute hmac of version||encrypted data||iv
+    NSMutableData *dataToHmac = [NSMutableData data];
     [dataToHmac appendData:version];
     [dataToHmac appendData:iv];
     [dataToHmac appendData:encryptedData];
-
-
     *hmac = [Cryptography truncatedHmacSHA256:dataToHmac withMacKey:hmacKey];
     return encryptedData;
   }
-  
-  free(buffer); //free the buffer;
+  free(buffer);
   return nil;
 
 }

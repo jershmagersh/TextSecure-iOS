@@ -180,7 +180,7 @@
   [payload getBytes:version range:NSMakeRange(0, 1)];
   [payload getBytes:iv range:NSMakeRange(1, 16)];
   [payload getBytes:ciphertext range:NSMakeRange(17, [payload length]-10-17)];
-  [payload getBytes:mac range:NSMakeRange([payload length]-11, 10)];
+  [payload getBytes:mac range:NSMakeRange([payload length]-10, 10)];
 
   
   // try decrypting with AES CBC
@@ -190,7 +190,6 @@
   // Actually only the first 32 bits of this are the crypto key
   NSData* signalingKeyAESKeyMaterial = [signalingKey subdataWithRange:NSMakeRange(0, 32)];
   NSData* signalingKeyHMACKeyMaterial = [signalingKey subdataWithRange:NSMakeRange(32, 20)];
-#warning TOTALLY INSECURE mac handled incorrectly here.
   NSData* decryption=[Cryptography CC_AES256_CBC_Decryption:[NSData dataWithBytes:ciphertext length:ciphertext_length] withKey:signalingKeyAESKeyMaterial withIV:[NSData dataWithBytes:iv length:16] withVersion:[NSData dataWithBytes:version length:1] withMacKey:signalingKeyHMACKeyMaterial forMac:[NSData dataWithBytes:mac length:10]];
   
   // Now get the protocol buffer message out
@@ -198,8 +197,7 @@
   
   NSString *decryptedMessage = [IncomingPushMessageSignal getMessageBody:fullMessageInfoRecieved];
   NSString *decryptedMessageAndInfo = [IncomingPushMessageSignal prettyPrint:fullMessageInfoRecieved];
-//  UIAlertView *pushAlert = [[UIAlertView alloc] initWithTitle:[pushInfo objectForKey:@"alert"] message:[NSString stringWithFormat:@"message:\n%@\ndecryption:\n%@\n",[pushInfo objectForKey:@"m"],decryptedMessage] delegate:self cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
-  UIAlertView *pushAlert = [[UIAlertView alloc] initWithTitle:@"decrypted message" message:decryptedMessageAndInfo delegate:self cancelButtonTitle:Nil otherButtonTitles:@"OK", nil];
+  UIAlertView *pushAlert = [[UIAlertView alloc] initWithTitle:@"decrypted message" message:decryptedMessageAndInfo delegate:self cancelButtonTitle:nil otherButtonTitles:@"OK", nil];
   [pushAlert show];
 #warning we need to handle this push!, the UI will need to select the appropriate message view
 
