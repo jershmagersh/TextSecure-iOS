@@ -164,14 +164,9 @@
 }
 
 -(void) handlePush:(NSDictionary *)pushInfo {
-	
+#warning unencrypted pipline
 	NSLog(@"full message json %@",pushInfo);
-  // Let's try decrypting the message with my signaling key
   NSData *payload = [NSData dataFromBase64String:[pushInfo objectForKey:@"m"]];
-//  opaque version[1];
-//  opaque iv[16];
-//  opaque ciphertext[...]; // The IncomingPushMessageSignal
-//  opaque mac[10];
   unsigned char version[1];
   unsigned char iv[16];
   int ciphertext_length=([payload length]-10-17)*sizeof(char);
@@ -182,8 +177,6 @@
   [payload getBytes:ciphertext range:NSMakeRange(17, [payload length]-10-17)];
   [payload getBytes:mac range:NSMakeRange([payload length]-10, 10)];
 
-  
-  // try decrypting with AES CBC
 
   NSData* signalingKey = [NSData dataFromBase64String:[Cryptography getSignalingKeyToken]];
   NSLog(@"signaling key %@",[Cryptography getSignalingKeyToken]);

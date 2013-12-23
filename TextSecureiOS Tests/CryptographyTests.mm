@@ -76,7 +76,7 @@
   textsecure::IncomingPushMessageSignal *fullMessageInfoRecieved = [IncomingPushMessageSignal getIncomingPushMessageSignalForData:decryption];
   
    NSString *decryptedMessage = [IncomingPushMessageSignal getMessageBody:fullMessageInfoRecieved];
-  XCTAssertTrue([decryptedMessage isEqualToString:originalMessage], @"Decrypted message: %@ is not equal to original: %@",decryptedMessage,originalMessage);
+   XCTAssertTrue([decryptedMessage isEqualToString:originalMessage], @"Decrypted message: %@ is not equal to original: %@",decryptedMessage,originalMessage);
 
 }
 
