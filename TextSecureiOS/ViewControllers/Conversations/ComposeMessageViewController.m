@@ -8,7 +8,6 @@
 
 #import "ComposeMessageViewController.h"
 #import "TSContactManager.h"
-#import "TSRecipientPrekeyRequest.h"
 #import "TSContact.h"
 
 @interface ComposeMessageViewController (Private)
@@ -190,8 +189,11 @@
     postNotificationName:@"SendMessage"
     object:self userInfo:[[NSDictionary alloc] initWithObjects:[[NSArray alloc] initWithObjects:self.contact,text, nil]
                                                        forKeys:[[NSArray alloc] initWithObjects:@"contact",@"message", nil]]];
-    [self finishSend];
+//    [self finishSend];
 }
+
+
+
 
 - (JSBubbleMessageType)messageTypeForRowAtIndexPath:(NSIndexPath *)indexPath
 {
