@@ -186,11 +186,12 @@
   // try decrypting with AES CBC
 
   NSData* signalingKey = [NSData dataFromBase64String:[Cryptography getSignalingKeyToken]];
+  NSLog(@"signaling key %@",[Cryptography getSignalingKeyToken]);
   // Actually only the first 32 bits of this are the crypto key
   NSData* signalingKeyAESKeyMaterial = [signalingKey subdataWithRange:NSMakeRange(0, 32)];
   NSData* signalingKeyHMACKeyMaterial = [signalingKey subdataWithRange:NSMakeRange(32, 20)];
 #warning TOTALLY INSECURE mac handled incorrectly here.
-  NSData* decryption=[Cryptography CC_AES256_CBC_Decryption:[NSData dataWithBytes:ciphertext length:ciphertext_length] withKey:signalingKeyAESKeyMaterial withIV:[NSData dataWithBytes:iv length:16] withMac:signalingKeyHMACKeyMaterial];
+  NSData* decryption=[Cryptography CC_AES256_CBC_Decryption:[NSData dataWithBytes:ciphertext length:ciphertext_length] withKey:signalingKeyAESKeyMaterial withIV:[NSData dataWithBytes:iv length:16] withVersion:[NSData dataWithBytes:version length:1] withMacKey:signalingKeyHMACKeyMaterial forMac:[NSData dataWithBytes:mac length:10]];
   
   // Now get the protocol buffer message out
   textsecure::IncomingPushMessageSignal *fullMessageInfoRecieved = [IncomingPushMessageSignal getIncomingPushMessageSignalForData:decryption];

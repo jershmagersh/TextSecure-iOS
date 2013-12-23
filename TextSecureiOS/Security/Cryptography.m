@@ -82,7 +82,6 @@
 }
 
 + (NSString*) getAuthorizationTokenFromAuthToken:(NSString*)authToken{
-    NSLog(@"Username : %@ and AuthToken: %@", [Cryptography getUsernameToken], [Cryptography getAuthenticationToken] );
     return [NSString stringWithFormat:@"%@:%@",[Cryptography getUsernameToken],[Cryptography getAuthenticationToken]];
 }
 
@@ -165,75 +164,85 @@
   
 }
 
-
-+(NSData*) CC_AES256_CBC_Decryption:(NSData*) dataToDecrypt withKey:(NSData*) key withIV:(NSData*) iv withMac:(NSData*)hmacKey {
-  //
-   const RNCryptorSettings kRNTextSecureSettings = {
-    .algorithm = kCCAlgorithmAES128,
-    .blockSize = kCCBlockSizeAES128,
-    .IVSize = kCCBlockSizeAES128,
-    .options = kCCOptionPKCS7Padding,
-.HMACAlgorithm = kCCHmacAlgSHA1,
-    .HMACLength = [hmacKey length],
-    
-    .keySettings = {
-      .keySize = kCCKeySizeAES256,
-      .saltSize = 0,
-      .PBKDFAlgorithm = kCCPBKDF2,
-      .PRF = kCCPRFHmacAlgSHA1,
-      .rounds = 10000
-    },
-    
-    .HMACKeySettings = {
-      .keySize = [hmacKey length],
-      .saltSize = 0,
-      .PBKDFAlgorithm = kCCPBKDF2,
-      .PRF = kCCPRFHmacAlgSHA1,
-      .rounds = 10000
-    }
-  };
-  
-  CCCryptorRef cryptor;
-  CCCryptorStatus cryptorStatus = CCCryptorCreate(kCCDecrypt,
-                                  kRNTextSecureSettings.algorithm,
-                                  kRNTextSecureSettings.options,
-                                  [key bytes],
-                                  [key length],
-                                  [iv bytes],
-                                  &cryptor);
-  if (cryptorStatus != kCCSuccess || cryptor == NULL) {
-    return nil;
-  }
-  
-  NSMutableData *buffer = [[NSMutableData alloc] init];
-  [buffer setLength:CCCryptorGetOutputLength(cryptor, [dataToDecrypt length], true)]; // We'll reuse the buffer in -finish
-  
-  size_t dataOutMoved;
-  cryptorStatus = CCCryptorUpdate(cryptor,       // cryptor
-                                  dataToDecrypt.bytes,      // dataIn
-                                  dataToDecrypt.length,     // dataInLength (verified > 0 above)
-                                  buffer.mutableBytes,      // dataOut
-                                  buffer.length, // dataOutAvailable
-                                  &dataOutMoved);   // dataOutMoved
-
-  if (cryptorStatus != kCCSuccess) {
-    return nil;
-  }
-#warning TOTALLY INSECURE mac handled incorrectly here.
-//  NSMutableData *HMACData = [NSMutableData dataWithLength:[hmacKey length]];
-//  CCHmacContext _HMACContext;
-//  CCHmacInit(&_HMACContext, kRNTextSecureSettings.HMACAlgorithm, [hmacKey bytes], [hmacKey length]);
-//  CCHmacUpdate(&_HMACContext, [dataToDecrypt bytes],[dataToDecrypt length]);
-//  CCHmacFinal(&_HMACContext, [HMACData mutableBytes]);
-//  if (![HMACData isEqualToData:dataToDecrypt]) {
-//    return nil;
-//  }
-//  
-  return [buffer subdataWithRange:NSMakeRange(0, dataOutMoved)];
-//  @throw [[NSException alloc] initWithName:@"unimplemented" reason:@"sketch of what we need" userInfo:nil];
-//  return nil;
++(NSData*) truncatedHmacSHA256:(NSData*)dataToHmac withMacKey:(NSData*)hmacKey {
+  uint8_t ourHmac[CC_SHA256_DIGEST_LENGTH] = {0};
+  CCHmac(kCCHmacAlgSHA256,
+         [hmacKey bytes],
+         [hmacKey length],
+         [dataToHmac bytes],
+         [dataToHmac  length],
+         ourHmac);
+  return [NSData dataWithBytes: ourHmac length: 10];
 }
 
+
++(NSData*) CC_AES256_CBC_Decryption:(NSData*) dataToDecrypt withKey:(NSData*) key withIV:(NSData*) iv withVersion:(NSData*)version withMacKey:(NSData*) hmacKey forMac:(NSData *)hmac{
+  NSMutableData *dataToHmac = [NSMutableData data ];
+  [dataToHmac appendData:version];
+  [dataToHmac appendData:iv];
+  [dataToHmac appendData:dataToDecrypt];
+
+
+  NSData* ourHmacData = [Cryptography truncatedHmacSHA256:dataToHmac withMacKey:hmacKey];
+  if(![ourHmacData isEqualToData:hmac]) {
+    return nil;
+  }
+
+  // Decrypt
+  size_t bufferSize           = [dataToDecrypt length] + kCCBlockSizeAES128;
+  void* buffer                = malloc(bufferSize);
+  
+  size_t bytesDecrypted    = 0;
+  CCCryptorStatus cryptStatus = CCCrypt(kCCDecrypt, kCCAlgorithmAES128, kCCOptionPKCS7Padding,
+                                        [key bytes], [key length],
+                                        [iv bytes],
+                                        [dataToDecrypt bytes], [dataToDecrypt length],
+                                        buffer, bufferSize,
+                                        &bytesDecrypted);
+  if (cryptStatus == kCCSuccess) {
+    //the returned NSData takes ownership of the buffer and will free it on deallocation
+    return [NSData dataWithBytesNoCopy:buffer length:bytesDecrypted];
+  }
+
+  
+  
+  free(buffer); //free the buffer;
+  return nil;
+
+
+}
+
+
++(NSData*)CC_AES256_CBC_Encryption:(NSData*) dataToEncrypt withKey:(NSData*) key withIV:(NSData*) iv withVersion:(NSData*)version  withMacKey:(NSData*) hmacKey computedMac:(NSData**)hmac {
+  
+  size_t bufferSize           = [dataToEncrypt length] + kCCBlockSizeAES128;
+  void* buffer                = malloc(bufferSize);
+  
+  size_t bytesEncrypted    = 0;
+  CCCryptorStatus cryptStatus = CCCrypt(kCCEncrypt, kCCAlgorithmAES128, kCCOptionPKCS7Padding,
+                                        [key bytes], [key length],
+                                        [iv bytes], /* initialization vector (optional) */
+                                        [dataToEncrypt bytes], [dataToEncrypt length],
+                                        buffer, bufferSize, /* output */
+                                        &bytesEncrypted);
+#warning totally insecure we need to compute hmac
+  if (cryptStatus == kCCSuccess){
+    //the returned NSData takes ownership of the buffer and will free it on deallocation
+    NSData* encryptedData= [NSData dataWithBytesNoCopy:buffer length:bytesEncrypted];
+    NSMutableData *dataToHmac = [NSMutableData data ];
+    [dataToHmac appendData:version];
+    [dataToHmac appendData:iv];
+    [dataToHmac appendData:encryptedData];
+
+
+    *hmac = [Cryptography truncatedHmacSHA256:dataToHmac withMacKey:hmacKey];
+    return encryptedData;
+  }
+  
+  free(buffer); //free the buffer;
+  return nil;
+
+}
 
 
 

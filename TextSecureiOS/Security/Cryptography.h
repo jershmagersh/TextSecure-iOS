@@ -34,7 +34,9 @@
 +(NSData*) AES256Encryption:(NSData*) dataToEncrypt withPassword:(NSString*)password;
 +(NSData*) AES256Decryption:(NSData*) dataToDecrypt withPassword:(NSString*)password;
 
-+(NSData*) CC_AES256_CBC_Decryption:(NSData*) dataToDecrypt withKey:(NSData*) key withIV:(NSData*) iv withMac:(NSData*)hmacKey;
++(NSData*) CC_AES256_CBC_Decryption:(NSData*) dataToDecrypt withKey:(NSData*) key withIV:(NSData*) iv withVersion:(NSData*)version  withMacKey:(NSData*) hmacKey forMac:(NSData*)mac ;
++(NSData*)CC_AES256_CBC_Encryption:(NSData*) dataToEncrypt withKey:(NSData*) key withIV:(NSData*) iv withVersion:(NSData*)version  withMacKey:(NSData*) hmacKey computedMac:(NSData**)hmac;
 +(NSString*)truncatedSHA1Base64EncodedWithoutPadding:(NSString*)string;
 
++(NSData*) truncatedHmacSHA256:(NSData*)dataToHmac withMacKey:(NSData*)hmacKey;
 @end
